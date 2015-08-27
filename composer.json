@@ -1,0 +1,20 @@
+{
+    "name": "kodicms/laravel-api",
+    "license": "GNU GENERAL PUBLIC LICENSE",
+    "authors": [
+        {
+            "name": "Pavel Buchnev",
+            "email": "butschster@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.9",
+        "laravel/framework": "5.1.*"
+    },
+    "autoload": {
+        "psr-4": {
+			"KodiCMS\\API\\"     : "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
