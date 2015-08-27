@@ -15,239 +15,255 @@ use KodiCMS\API\Exceptions\MissingParameterException;
 
 abstract class Controller extends BaseController
 {
-	/**
-	 * Массив возвращаемых значений, будет преобразован в формат JSON
-	 * @var array
-	 */
-	public $responseArray = ['content' => null];
 
-	/**
-	 * @var array
-	 */
-	public $requiredFields = [];
+    /**
+     * Массив возвращаемых значений, будет преобразован в формат JSON
+     * @var array
+     */
+    public $responseArray = [ 'content' => null ];
 
-	/**
-	 * Получение значения передаваемого параметра
-	 *
-	 * Если параметр указан как обязательный, то при его отсутсвии на запрос
-	 * вернется ошибка
-	 *
-	 * @param string $key Ключ
-	 * @param mixed $default Значение по умолчанию, если параметр отсутсвует
-	 * @param bool|string|array $isRequired Параметр обязателен для передачи
-	 * @return string
-	 * @throws MissingApiParameterException
-	 */
-	public function getParameter($key, $default = null, $isRequired = false)
-	{
-		if (!empty($isRequired))
-		{
-			$this->validateParameters([$key => $isRequired]);
-		}
+    /**
+     * @var array
+     */
+    public $requiredFields = [ ];
 
-		return array_get($this->request->all(), $key, $default);
-	}
 
-	/**
-	 * @param string $key
-	 * @param bool|string|array $rules
-	 * @return string
-	 * @throws MissingApiParameterException
-	 */
-	public function getRequiredParameter($key, $rules = true)
-	{
-		return $this->getParameter($key, null, $rules);
-	}
+    /**
+     * Получение значения передаваемого параметра
+     *
+     * Если параметр указан как обязательный, то при его отсутсвии на запрос
+     * вернется ошибка
+     *
+     * @param string            $key        Ключ
+     * @param mixed             $default    Значение по умолчанию, если параметр отсутсвует
+     * @param bool|string|array $isRequired Параметр обязателен для передачи
+     *
+     * @return string
+     * @throws MissingApiParameterException
+     */
+    public function getParameter($key, $default = null, $isRequired = false)
+    {
+        if ( ! empty( $isRequired )) {
+            $this->validateParameters([ $key => $isRequired ]);
+        }
 
-	/**
-	 * @param string $message
-	 */
-	public function setMessage($message)
-	{
-		$this->responseArray['message'] = $message;
-	}
+        return array_get($this->request->all(), $key, $default);
+    }
 
-	/**
-	 * @param array $errors
-	 */
-	public function setErrors(array $errors)
-	{
-		$this->responseArray['errors'] = $errors;
-	}
 
-	/**
-	 * @param mixed $data
-	 */
-	public function setContent($data)
-	{
-		if ($data instanceof View)
-		{
-			$data = $data->render();
-		}
+    /**
+     * @param string            $key
+     * @param bool|string|array $rules
+     *
+     * @return string
+     * @throws MissingApiParameterException
+     */
+    public function getRequiredParameter($key, $rules = true)
+    {
+        return $this->getParameter($key, null, $rules);
+    }
 
-		$this->responseArray['content'] = $data;
-	}
 
-	/**
-	 * @param array $parameters
-	 * @return bool
-	 * @throws MissingApiParameterException
-	 */
-	final public function validateParameters(array $parameters)
-	{
-		$parameters = array_map(function ($rules)
-		{
-			if (is_bool($rules) AND $rules === true)
-			{
-				return 'required';
-			}
+    /**
+     * @param string $message
+     */
+    public function setMessage($message)
+    {
+        $this->responseArray['message'] = $message;
+    }
 
-			return $rules;
 
-		}, $parameters);
+    /**
+     * @param array $errors
+     */
+    public function setErrors(array $errors)
+    {
+        $this->responseArray['errors'] = $errors;
+    }
 
-		$validator = Validator::make($this->request->all(), $parameters);
 
-		if ($validator->fails())
-		{
-			throw new MissingParameterException($validator);
-		}
+    /**
+     * @param mixed $data
+     */
+    public function setContent($data)
+    {
+        if ($data instanceof View) {
+            $data = $data->render();
+        }
 
-		return true;
-	}
+        $this->responseArray['content'] = $data;
+    }
 
-	/**
-	 * Execute an action on the controller.
-	 *
-	 * @param  string $method
-	 * @param  array $parameters
-	 * @return array
-	 */
-	public function callAction($method, $parameters)
-	{
-		$this->responseArray['type'] = Response::TYPE_CONTENT;
-		$this->responseArray['method'] = $this->request->method();
-		$this->responseArray['code'] = Response::NO_ERROR;
 
-		if (isset($this->requiredFields[$method]) AND is_array($this->requiredFields[$method]))
-		{
-			$this->validateParameters($this->requiredFields[$method]);
-		}
+    /**
+     * @param array $parameters
+     *
+     * @return bool
+     * @throws MissingApiParameterException
+     */
+    final public function validateParameters(array $parameters)
+    {
+        $parameters = array_map(function ($rules) {
+            if (is_bool($rules) AND $rules === true) {
+                return 'required';
+            }
 
-		$response = parent::callAction($method, $parameters);
+            return $rules;
 
-		if ($response instanceof RedirectResponse)
-		{
-			$this->responseArray['type'] = Response::TYPE_REDIRECT;
-			$this->responseArray['targetUrl'] = $response->getTargetUrl();
-			$this->responseArray['code'] = $response->getStatusCode();
-		}
-		else if ($response instanceof View)
-		{
-			return new JsonResponse($response->render());
-		}
-		else if ($response instanceof JsonResponse)
-		{
-			return $response;
-		}
+        }, $parameters);
 
-		return (new Response(config('app.debug')))->createResponse($this->responseArray);
-	}
+        $validator = Validator::make($this->request->all(), $parameters);
 
-	/**
-	 * @param string $command
-	 *
-	 * @return $this
-	 */
-	public function addJavascriptCommand($command)
-	{
-		$this->responseArray['commands'][] = $command;
+        if ($validator->fails()) {
+            throw new MissingParameterException($validator);
+        }
 
-		return $this;
-	}
+        return true;
+    }
 
-	/**
-	 * Handle calls to missing methods on the controller.
-	 *
-	 * @param  string $method
-	 * @param  array $parameters
-	 * @return mixed
-	 *
-	 * @throws BadMethodCallException
-	 */
-	public function __call($method, $parameters)
-	{
-		throw new BadMethodCallException("The requested API action [$method] does not exist.");
-	}
 
-	/***************************************
-	 * Magic methods
-	 ***************************************/
+    /**
+     * Execute an action on the controller.
+     *
+     * @param  string $method
+     * @param  array  $parameters
+     *
+     * @return array
+     */
+    public function callAction($method, $parameters)
+    {
+        $this->responseArray['type']   = Response::TYPE_CONTENT;
+        $this->responseArray['method'] = $this->request->method();
+        $this->responseArray['code']   = Response::NO_ERROR;
 
-	/**
-	 * @param string $key
-	 * @param mixed $value
-	 */
-	public function __set($key, $value)
-	{
-		$this->responseArray[$key] = $value;
-	}
+        if (isset( $this->requiredFields[$method] ) AND is_array($this->requiredFields[$method])) {
+            $this->validateParameters($this->requiredFields[$method]);
+        }
 
-	/**
-	 * @param string $key
-	 * @return mixed
-	 */
-	public function __get($key)
-	{
-		return $this->responseArray[$key];
-	}
+        $response = parent::callAction($method, $parameters);
 
-	/**
-	 * @param string $key
-	 * @return bool
-	 */
-	public function __isset($key)
-	{
-		return isset($this->responseArray[$key]);
-	}
+        if ($response instanceof RedirectResponse) {
+            $this->responseArray['type']      = Response::TYPE_REDIRECT;
+            $this->responseArray['targetUrl'] = $response->getTargetUrl();
+            $this->responseArray['code']      = $response->getStatusCode();
+        } else {
+            if ($response instanceof View) {
+                return new JsonResponse($response->render());
+            } else {
+                if ($response instanceof JsonResponse) {
+                    return $response;
+                }
+            }
+        }
 
-	/**
-	 * @param string $key
-	 */
-	public function __unset($key)
-	{
-		unset($this->responseArray[$key]);
-	}
+        return (new Response(config('app.debug')))->createResponse($this->responseArray);
+    }
 
-	/**
-	 * Throw the failed validation exception.
-	 *
-	 * @param  \Illuminate\Http\Request $request
-	 * @param  \Illuminate\Contracts\Validation\Validator $validator
-	 * @return void
-	 */
-	protected function throwValidationException(Request $request, $validator)
-	{
-		$exception = new ValidationException();
-		$exception->setValidator($validator);
 
-		throw $exception;
-	}
+    /**
+     * @param string $command
+     *
+     * @return $this
+     */
+    public function addJavascriptCommand($command)
+    {
+        $this->responseArray['commands'][] = $command;
 
-	/**
-	 * Create the response for when a request fails validation.
-	 *
-	 * @param  \Illuminate\Http\Request $request
-	 * @param  array $errors
-	 * @return \Illuminate\Http\Response
-	 */
-	protected function buildFailedValidationResponse(Request $request, array $errors)
-	{
-		if ($request->ajax())
-		{
-			return (new Response(config('app.debug')))->createResponse($errors, 422);
-		}
+        return $this;
+    }
 
-		return redirect()->to($this->getRedirectUrl())->withInput($request->input())->withErrors($errors, $this->errorBag());
-	}
+
+    /**
+     * Handle calls to missing methods on the controller.
+     *
+     * @param  string $method
+     * @param  array  $parameters
+     *
+     * @return mixed
+     *
+     * @throws BadMethodCallException
+     */
+    public function __call($method, $parameters)
+    {
+        throw new BadMethodCallException("The requested API action [$method] does not exist.");
+    }
+
+    /***************************************
+     * Magic methods
+     ***************************************/
+
+    /**
+     * @param string $key
+     * @param mixed  $value
+     */
+    public function __set($key, $value)
+    {
+        $this->responseArray[$key] = $value;
+    }
+
+
+    /**
+     * @param string $key
+     *
+     * @return mixed
+     */
+    public function __get($key)
+    {
+        return $this->responseArray[$key];
+    }
+
+
+    /**
+     * @param string $key
+     *
+     * @return bool
+     */
+    public function __isset($key)
+    {
+        return isset( $this->responseArray[$key] );
+    }
+
+
+    /**
+     * @param string $key
+     */
+    public function __unset($key)
+    {
+        unset( $this->responseArray[$key] );
+    }
+
+
+    /**
+     * Throw the failed validation exception.
+     *
+     * @param  \Illuminate\Http\Request                   $request
+     * @param  \Illuminate\Contracts\Validation\Validator $validator
+     *
+     * @return void
+     */
+    protected function throwValidationException(Request $request, $validator)
+    {
+        $exception = new ValidationException();
+        $exception->setValidator($validator);
+
+        throw $exception;
+    }
+
+
+    /**
+     * Create the response for when a request fails validation.
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @param  array                    $errors
+     *
+     * @return \Illuminate\Http\Response
+     */
+    protected function buildFailedValidationResponse(Request $request, array $errors)
+    {
+        if ($request->ajax()) {
+            return (new Response(config('app.debug')))->createResponse($errors, 422);
+        }
+
+        return redirect()->to($this->getRedirectUrl())->withInput($request->input())->withErrors($errors, $this->errorBag());
+    }
 }

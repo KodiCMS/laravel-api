@@ -7,44 +7,47 @@ use Illuminate\Validation\Validator;
 
 class MissingParameterException extends Exception
 {
-	/**
-	 * @var string
-	 */
-	protected $code = Response::ERROR_MISSING_PAPAM;
 
-	/**
-	 * @var array
-	 */
-	protected $rules = [ ];
+    /**
+     * @var string
+     */
+    protected $code = Response::ERROR_MISSING_PAPAM;
 
-
-	/**
-	 * @param Validator $validator
-	 */
-	public function __construct(Validator $validator)
-	{
-		$this->rules   = $validator->errors()->getMessages();
-		$this->message = trans('api::core.messages.missing_params', [ 'field' => implode(', ', array_keys($validator->failed())) ]);
-	}
+    /**
+     * @var array
+     */
+    protected $rules = [ ];
 
 
-	/**
-	 * @return array
-	 */
-	public function getFailedRules()
-	{
-		return $this->rules;
-	}
+    /**
+     * @param Validator $validator
+     */
+    public function __construct(Validator $validator)
+    {
+        $this->rules   = $validator->errors()->getMessages();
+        $this->message = trans('api.messages.missing_params', [
+            'field' => implode(', ', array_keys($validator->failed()))
+        ]);
+    }
 
 
-	/**
-	 * @return array
-	 */
-	public function responseArray()
-	{
-		$data                 = parent::responseArray();
-		$data['failed_rules'] = $this->getFailedRules();
+    /**
+     * @return array
+     */
+    public function getFailedRules()
+    {
+        return $this->rules;
+    }
 
-		return $data;
-	}
+
+    /**
+     * @return array
+     */
+    public function responseArray()
+    {
+        $data                 = parent::responseArray();
+        $data['failed_rules'] = $this->getFailedRules();
+
+        return $data;
+    }
 }
