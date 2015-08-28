@@ -2,19 +2,23 @@
 
 namespace KodiCMS\API\Http\Controllers;
 
+use Request;
 use Validator;
 use Illuminate\View\View;
 use BadMethodCallException;
-use Illuminate\Http\Request;
 use KodiCMS\API\Http\Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 use KodiCMS\API\Exceptions\ValidationException;
 use Illuminate\Routing\Controller as BaseController;
 use KodiCMS\API\Exceptions\MissingParameterException;
+use Illuminate\Foundation\Validation\ValidatesRequests;
 
 abstract class Controller extends BaseController
 {
+
+    use DispatchesJobs, ValidatesRequests;
 
     /**
      * Массив возвращаемых значений, будет преобразован в формат JSON
@@ -22,11 +26,11 @@ abstract class Controller extends BaseController
      */
     public $responseArray = [ 'content' => null ];
 
+
     /**
      * @var array
      */
     public $requiredFields = [ ];
-
 
     /**
      * Получение значения передаваемого параметра
@@ -47,7 +51,7 @@ abstract class Controller extends BaseController
             $this->validateParameters([ $key => $isRequired ]);
         }
 
-        return array_get($this->request->all(), $key, $default);
+        return array_get(Request::all(), $key, $default);
     }
 
 
@@ -112,7 +116,7 @@ abstract class Controller extends BaseController
 
         }, $parameters);
 
-        $validator = Validator::make($this->request->all(), $parameters);
+        $validator = Validator::make(Request::all(), $parameters);
 
         if ($validator->fails()) {
             throw new MissingParameterException($validator);
@@ -133,7 +137,7 @@ abstract class Controller extends BaseController
     public function callAction($method, $parameters)
     {
         $this->responseArray['type']   = Response::TYPE_CONTENT;
-        $this->responseArray['method'] = $this->request->method();
+        $this->responseArray['method'] = Request::method();
         $this->responseArray['code']   = Response::NO_ERROR;
 
         if (isset( $this->requiredFields[$method] ) AND is_array($this->requiredFields[$method])) {
