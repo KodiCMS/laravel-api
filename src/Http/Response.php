@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\MassAssignmentException;
 
 class Response
 {
-
     const NO_ERROR = 200;
     const ERROR_MISSING_PAPAM = 110;
     const ERROR_VALIDATION = 120;
@@ -28,7 +27,6 @@ class Response
 
     private $debug;
 
-
     /**
      * @param bool $debug
      */
@@ -36,7 +34,6 @@ class Response
     {
         $this->debug = $debug;
     }
-
 
     /**
      * Creates the error Response associated with the given Exception.
@@ -50,7 +47,7 @@ class Response
         $responseData = [
             'code'    => $exception->getCode(),
             'type'    => static::TYPE_ERROR,
-            'message' => $exception->getMessage()
+            'message' => $exception->getMessage(),
         ];
 
         if ($exception instanceof Exception or method_exists($exception, 'responseArray')) {
@@ -60,7 +57,7 @@ class Response
                 $responseData['code'] = static::ERROR_PAGE_NOT_FOUND;
             } else {
                 if ($exception instanceof MassAssignmentException) {
-                    $responseData['code']  = static::ERROR_MISSING_ASSIGMENT;
+                    $responseData['code'] = static::ERROR_MISSING_ASSIGMENT;
                     $responseData['field'] = $exception->getMessage();
                 }
             }
@@ -74,10 +71,9 @@ class Response
         return $this->createResponse($responseData, 500);
     }
 
-
     /**
-     * @param array   $responseData
-     * @param integer $code
+     * @param array $responseData
+     * @param int   $code
      *
      * @return Response
      */
@@ -95,10 +91,9 @@ class Response
         }
     }
 
-
     /**
-     * @param array   $data
-     * @param integer $code
+     * @param array $data
+     * @param int   $code
      *
      * @return Response
      */
@@ -107,14 +102,13 @@ class Response
         $yaml = Yaml::dump($data);
 
         return new \Illuminate\Http\Response($yaml, $code, [
-            'Content-Type' => 'text/x-yaml'
+            'Content-Type' => 'text/x-yaml',
         ]);
     }
 
-
     /**
-     * @param array   $data
-     * @param integer $code
+     * @param array $data
+     * @param int   $code
      *
      * @return Response
      */
@@ -125,10 +119,9 @@ class Response
         $this->arrayToXml($data, $xml);
 
         return new \Illuminate\Http\Response((string) $xml->asXML(), $code, [
-            'Content-Type' => 'application/xml'
+            'Content-Type' => 'application/xml',
         ]);
     }
-
 
     protected function arrayToXml($data, &$xml)
     {
@@ -146,17 +139,16 @@ class Response
         }
     }
 
-
     /**
-     * @param array   $data
-     * @param integer $code
+     * @param array $data
+     * @param int   $code
      *
      * @return JsonResponse
      */
     protected function jsonResponse($data, $code)
     {
         return new JsonResponse($data, $code, [
-            'Content-Type' => 'application/json'
+            'Content-Type' => 'application/json',
         ]);
     }
 }

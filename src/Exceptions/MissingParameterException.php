@@ -7,7 +7,6 @@ use Illuminate\Validation\Validator;
 
 class MissingParameterException extends Exception
 {
-
     /**
      * @var string
      */
@@ -16,20 +15,18 @@ class MissingParameterException extends Exception
     /**
      * @var array
      */
-    protected $rules = [ ];
-
+    protected $rules = [];
 
     /**
      * @param Validator $validator
      */
     public function __construct(Validator $validator)
     {
-        $this->rules   = $validator->errors()->getMessages();
+        $this->rules = $validator->errors()->getMessages();
         $this->message = trans('api.messages.missing_params', [
-            'field' => implode(', ', array_keys($validator->failed()))
+            'field' => implode(', ', array_keys($validator->failed())),
         ]);
     }
-
 
     /**
      * @return array
@@ -39,13 +36,12 @@ class MissingParameterException extends Exception
         return $this->rules;
     }
 
-
     /**
      * @return array
      */
     public function responseArray()
     {
-        $data                 = parent::responseArray();
+        $data = parent::responseArray();
         $data['failed_rules'] = $this->getFailedRules();
 
         return $data;

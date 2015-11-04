@@ -7,12 +7,11 @@ use Illuminate\Routing\Route as Router;
 
 class RouteAPI
 {
-
     /**
      * Register a new GET route with the router.
      *
-     * @param  string                $uri
-     * @param  \Closure|array|string $action
+     * @param string                $uri
+     * @param \Closure|array|string $action
      *
      * @return \Illuminate\Routing\Route
      */
@@ -23,12 +22,11 @@ class RouteAPI
         return $this->addResponseType(Route::get($uri, $action));
     }
 
-
     /**
      * Register a new POST route with the router.
      *
-     * @param  string                $uri
-     * @param  \Closure|array|string $action
+     * @param string                $uri
+     * @param \Closure|array|string $action
      *
      * @return \Illuminate\Routing\Route
      */
@@ -39,12 +37,11 @@ class RouteAPI
         return $this->addResponseType(Route::post($uri, $action));
     }
 
-
     /**
      * Register a new PUT route with the router.
      *
-     * @param  string                $uri
-     * @param  \Closure|array|string $action
+     * @param string                $uri
+     * @param \Closure|array|string $action
      *
      * @return \Illuminate\Routing\Route
      */
@@ -55,12 +52,11 @@ class RouteAPI
         return $this->addResponseType(Route::put($uri, $action));
     }
 
-
     /**
      * Register a new PATCH route with the router.
      *
-     * @param  string                $uri
-     * @param  \Closure|array|string $action
+     * @param string                $uri
+     * @param \Closure|array|string $action
      *
      * @return \Illuminate\Routing\Route
      */
@@ -71,12 +67,11 @@ class RouteAPI
         return $this->addResponseType(Route::patch($uri, $action));
     }
 
-
     /**
      * Register a new DELETE route with the router.
      *
-     * @param  string                $uri
-     * @param  \Closure|array|string $action
+     * @param string                $uri
+     * @param \Closure|array|string $action
      *
      * @return \Illuminate\Routing\Route
      */
@@ -87,12 +82,11 @@ class RouteAPI
         return $this->addResponseType(Route::delete($uri, $action));
     }
 
-
     /**
      * Register a new OPTIONS route with the router.
      *
-     * @param  string                $uri
-     * @param  \Closure|array|string $action
+     * @param string                $uri
+     * @param \Closure|array|string $action
      *
      * @return \Illuminate\Routing\Route
      */
@@ -103,12 +97,11 @@ class RouteAPI
         return $this->addResponseType(Route::options($uri, $action));
     }
 
-
     /**
      * Register a new route responding to all verbs.
      *
-     * @param  string                $uri
-     * @param  \Closure|array|string $action
+     * @param string                $uri
+     * @param \Closure|array|string $action
      *
      * @return \Illuminate\Routing\Route
      */
@@ -118,7 +111,6 @@ class RouteAPI
 
         return Route::any($uri, $action);
     }
-
 
     /**
      * @param Router $route
@@ -130,7 +122,6 @@ class RouteAPI
         return $route->where('type', '\.[a-z]+');
     }
 
-
     /**
      * @param string $uri
      *
@@ -139,9 +130,9 @@ class RouteAPI
     protected function buildUri($uri)
     {
         if (strpos($uri, 'api.') === false) {
-            $uri = 'api.' . $uri;
+            $uri = 'api.'.$uri;
         }
 
-        return $uri . '{type?}';
+        return $uri.'{type?}';
     }
 }

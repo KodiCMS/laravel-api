@@ -6,12 +6,10 @@ use KodiCMS\API\Http\Response;
 
 class Exception extends \RuntimeException
 {
-
     /**
      * @var int
      */
     protected $code = Response::ERROR_UNKNOWN;
-
 
     /**
      * @return array

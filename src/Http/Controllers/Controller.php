@@ -17,23 +17,22 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 
 abstract class Controller extends BaseController
 {
-
     use DispatchesJobs, ValidatesRequests;
 
     /**
-     * Массив возвращаемых значений, будет преобразован в формат JSON
+     * Массив возвращаемых значений, будет преобразован в формат JSON.
+     *
      * @var array
      */
-    public $responseArray = [ 'content' => null ];
-
+    public $responseArray = ['content' => null];
 
     /**
      * @var array
      */
-    public $requiredFields = [ ];
+    public $requiredFields = [];
 
     /**
-     * Получение значения передаваемого параметра
+     * Получение значения передаваемого параметра.
      *
      * Если параметр указан как обязательный, то при его отсутсвии на запрос
      * вернется ошибка
@@ -42,31 +41,31 @@ abstract class Controller extends BaseController
      * @param mixed             $default    Значение по умолчанию, если параметр отсутсвует
      * @param bool|string|array $isRequired Параметр обязателен для передачи
      *
-     * @return string
      * @throws MissingApiParameterException
+     *
+     * @return string
      */
     public function getParameter($key, $default = null, $isRequired = false)
     {
-        if ( ! empty( $isRequired )) {
-            $this->validateParameters([ $key => $isRequired ]);
+        if (!empty($isRequired)) {
+            $this->validateParameters([$key => $isRequired]);
         }
 
         return array_get(Request::all(), $key, $default);
     }
 
-
     /**
      * @param string            $key
      * @param bool|string|array $rules
      *
-     * @return string
      * @throws MissingApiParameterException
+     *
+     * @return string
      */
     public function getRequiredParameter($key, $rules = true)
     {
         return $this->getParameter($key, null, $rules);
     }
-
 
     /**
      * @param string $message
@@ -76,7 +75,6 @@ abstract class Controller extends BaseController
         $this->responseArray['message'] = $message;
     }
 
-
     /**
      * @param array $errors
      */
@@ -84,7 +82,6 @@ abstract class Controller extends BaseController
     {
         $this->responseArray['errors'] = $errors;
     }
-
 
     /**
      * @param mixed $data
@@ -98,17 +95,17 @@ abstract class Controller extends BaseController
         $this->responseArray['content'] = $data;
     }
 
-
     /**
      * @param array $parameters
      *
-     * @return bool
      * @throws MissingApiParameterException
+     *
+     * @return bool
      */
     final public function validateParameters(array $parameters)
     {
         $parameters = array_map(function ($rules) {
-            if (is_bool($rules) AND $rules === true) {
+            if (is_bool($rules) and $rules === true) {
                 return 'required';
             }
 
@@ -125,31 +122,30 @@ abstract class Controller extends BaseController
         return true;
     }
 
-
     /**
      * Execute an action on the controller.
      *
-     * @param  string $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array  $parameters
      *
      * @return array
      */
     public function callAction($method, $parameters)
     {
-        $this->responseArray['type']   = Response::TYPE_CONTENT;
+        $this->responseArray['type'] = Response::TYPE_CONTENT;
         $this->responseArray['method'] = Request::method();
-        $this->responseArray['code']   = Response::NO_ERROR;
+        $this->responseArray['code'] = Response::NO_ERROR;
 
-        if (isset( $this->requiredFields[$method] ) AND is_array($this->requiredFields[$method])) {
+        if (isset($this->requiredFields[$method]) and is_array($this->requiredFields[$method])) {
             $this->validateParameters($this->requiredFields[$method]);
         }
 
         $response = parent::callAction($method, $parameters);
 
         if ($response instanceof RedirectResponse) {
-            $this->responseArray['type']      = Response::TYPE_REDIRECT;
+            $this->responseArray['type'] = Response::TYPE_REDIRECT;
             $this->responseArray['targetUrl'] = $response->getTargetUrl();
-            $this->responseArray['code']      = $response->getStatusCode();
+            $this->responseArray['code'] = $response->getStatusCode();
         } else {
             if ($response instanceof View) {
                 return new JsonResponse($response->render());
@@ -163,7 +159,6 @@ abstract class Controller extends BaseController
         return (new Response(config('app.debug')))->createResponse($this->responseArray);
     }
 
-
     /**
      * @param string $command
      *
@@ -176,16 +171,15 @@ abstract class Controller extends BaseController
         return $this;
     }
 
-
     /**
      * Handle calls to missing methods on the controller.
      *
-     * @param  string $method
-     * @param  array  $parameters
-     *
-     * @return mixed
+     * @param string $method
+     * @param array  $parameters
      *
      * @throws BadMethodCallException
+     *
+     * @return mixed
      */
     public function __call($method, $parameters)
     {
@@ -205,7 +199,6 @@ abstract class Controller extends BaseController
         $this->responseArray[$key] = $value;
     }
 
-
     /**
      * @param string $key
      *
@@ -216,7 +209,6 @@ abstract class Controller extends BaseController
         return $this->responseArray[$key];
     }
 
-
     /**
      * @param string $key
      *
@@ -224,24 +216,22 @@ abstract class Controller extends BaseController
      */
     public function __isset($key)
     {
-        return isset( $this->responseArray[$key] );
+        return isset($this->responseArray[$key]);
     }
-
 
     /**
      * @param string $key
      */
     public function __unset($key)
     {
-        unset( $this->responseArray[$key] );
+        unset($this->responseArray[$key]);
     }
-
 
     /**
      * Throw the failed validation exception.
      *
-     * @param  \Illuminate\Http\Request                   $request
-     * @param  \Illuminate\Contracts\Validation\Validator $validator
+     * @param \Illuminate\Http\Request                   $request
+     * @param \Illuminate\Contracts\Validation\Validator $validator
      *
      * @return void
      */
@@ -253,12 +243,11 @@ abstract class Controller extends BaseController
         throw $exception;
     }
 
-
     /**
      * Create the response for when a request fails validation.
      *
-     * @param  \Illuminate\Http\Request $request
-     * @param  array                    $errors
+     * @param \Illuminate\Http\Request $request
+     * @param array                    $errors
      *
      * @return \Illuminate\Http\Response
      */
