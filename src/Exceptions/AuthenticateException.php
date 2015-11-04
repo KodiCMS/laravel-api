@@ -6,7 +6,6 @@ use KodiCMS\API\Http\Response;
 
 class AuthenticateException extends Exception
 {
-
     /**
      * @var int
      */

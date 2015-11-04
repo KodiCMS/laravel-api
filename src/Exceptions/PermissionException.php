@@ -6,23 +6,20 @@ use KodiCMS\API\Http\Response;
 
 class PermissionException extends Exception
 {
-
     /**
      * @var string
      */
     protected $permission = '';
 
-
     /**
      * @param null   $permission
      * @param string $message
      */
-    public function __construct($permission = null, $message = "")
+    public function __construct($permission = null, $message = '')
     {
         $this->setPermission($permission);
-        $this->message = empty( $message ) ? trans('api.messages.error_permissions') : $message;
+        $this->message = empty($message) ? trans('api.messages.error_permissions') : $message;
     }
-
 
     /**
      * @param $permission
@@ -32,7 +29,6 @@ class PermissionException extends Exception
         $this->permission = $permission;
     }
 
-
     /**
      * @return array
      */
@@ -41,8 +37,7 @@ class PermissionException extends Exception
         return [
             'code'       => Response::ERROR_PERMISSIONS,
             'type'       => Response::TYPE_ERROR,
-            'permission' => $this->permission
+            'permission' => $this->permission,
         ];
     }
-
 }
