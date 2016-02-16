@@ -4,8 +4,8 @@ namespace KodiCMS\API\Http;
 
 use Request;
 use Symfony\Component\Yaml\Yaml;
+use Illuminate\Http\JsonResponse;
 use KodiCMS\API\Exceptions\Exception;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 
