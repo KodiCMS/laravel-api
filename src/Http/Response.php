@@ -2,27 +2,29 @@
 
 namespace KodiCMS\API\Http;
 
+use Illuminate\Database\Eloquent\MassAssignmentException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
+use KodiCMS\API\Exceptions\Exception;
 use Request;
 use Symfony\Component\Yaml\Yaml;
-use Illuminate\Http\JsonResponse;
-use KodiCMS\API\Exceptions\Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Database\Eloquent\MassAssignmentException;
 
 class Response
 {
-    const NO_ERROR = 200;
-    const ERROR_MISSING_PAPAM = 110;
-    const ERROR_VALIDATION = 120;
-    const ERROR_UNKNOWN = 130;
-    const ERROR_TOKEN = 140;
-    const ERROR_MISSING_ASSIGMENT = 150;
-    const ERROR_PERMISSIONS = 220;
-    const ERROR_UNAUTHORIZED = 403;
-    const ERROR_PAGE_NOT_FOUND = 404;
 
-    const TYPE_ERROR = 'error';
-    const TYPE_CONTENT = 'content';
+    const NO_ERROR                = 200;
+    const ERROR_MISSING_PAPAM     = 110;
+    const ERROR_VALIDATION        = 120;
+    const ERROR_UNKNOWN           = 130;
+    const ERROR_TOKEN             = 140;
+    const ERROR_MISSING_ASSIGMENT = 150;
+    const ERROR_PERMISSIONS       = 220;
+    const ERROR_UNAUTHORIZED      = 403;
+    const ERROR_PAGE_NOT_FOUND    = 404;
+
+    const TYPE_ERROR    = 'error';
+    const TYPE_CONTENT  = 'content';
     const TYPE_REDIRECT = 'redirect';
 
     private $debug;
@@ -45,22 +47,22 @@ class Response
     public function createExceptionResponse(\Exception $exception)
     {
         $responseData = [
-            'code'    => $exception->getCode(),
-            'type'    => static::TYPE_ERROR,
+            'code' => $exception->getCode(),
+            'type' => static::TYPE_ERROR,
             'message' => $exception->getMessage(),
         ];
 
+        if ($exception instanceof ValidationException) {
+            $exception = new \KodiCMS\API\Exceptions\ValidationException($exception->validator);
+        }
+
         if ($exception instanceof Exception or method_exists($exception, 'responseArray')) {
             $responseData = array_merge($responseData, $exception->responseArray());
-        } else {
-            if ($exception instanceof ModelNotFoundException) {
-                $responseData['code'] = static::ERROR_PAGE_NOT_FOUND;
-            } else {
-                if ($exception instanceof MassAssignmentException) {
-                    $responseData['code'] = static::ERROR_MISSING_ASSIGMENT;
-                    $responseData['field'] = $exception->getMessage();
-                }
-            }
+        } else if ($exception instanceof ModelNotFoundException) {
+            $responseData['code'] = static::ERROR_PAGE_NOT_FOUND;
+        } else if ($exception instanceof MassAssignmentException) {
+            $responseData['code']  = static::ERROR_MISSING_ASSIGMENT;
+            $responseData['field'] = $exception->getMessage();
         }
 
         if ($this->debug) {
@@ -73,7 +75,7 @@ class Response
 
     /**
      * @param array $responseData
-     * @param int   $code
+     * @param int $code
      *
      * @return Response
      */
@@ -93,7 +95,7 @@ class Response
 
     /**
      * @param array $data
-     * @param int   $code
+     * @param int $code
      *
      * @return Response
      */
@@ -108,7 +110,7 @@ class Response
 
     /**
      * @param array $data
-     * @param int   $code
+     * @param int $code
      *
      * @return Response
      */
@@ -141,7 +143,7 @@ class Response
 
     /**
      * @param array $data
-     * @param int   $code
+     * @param int $code
      *
      * @return JsonResponse
      */

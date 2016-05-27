@@ -2,20 +2,30 @@
 
 namespace KodiCMS\API\Exceptions;
 
+use Exception;
 use KodiCMS\API\Http\Response;
-use Illuminate\Validation\Validator;
 
 class ValidationException extends Exception
 {
-    /**
-     * @var array
-     */
-    protected $messages = [];
 
     /**
-     * @var array
+     * The validator instance.
+     *
+     * @var \Illuminate\Validation\Validator
      */
-    protected $rules = [];
+    protected $validator;
+
+    /**
+     * ValidationException constructor.
+     *
+     * @param \Illuminate\Validation\Validator $validator
+     */
+    public function __construct(\Illuminate\Validation\Validator $validator)
+    {
+        parent::__construct('The given data failed to pass validation.');
+
+        $this->validator = $validator;
+    }
 
     /**
      * @var int
@@ -23,24 +33,11 @@ class ValidationException extends Exception
     protected $code = Response::ERROR_VALIDATION;
 
     /**
-     * @param Validator $object
-     *
-     * @return $this
-     */
-    public function setValidator(Validator $object)
-    {
-        $this->messages = $object->errors()->getMessages();
-        $this->rules = $object->failed();
-
-        return $this;
-    }
-
-    /**
      * @return array
      */
     public function getFailedRules()
     {
-        return $this->rules;
+        return $this->validator->failed();
     }
 
     /**
@@ -48,18 +45,17 @@ class ValidationException extends Exception
      */
     public function getErrorMessages()
     {
-        return $this->messages;
+        return $this->validator->errors()->getMessages();
     }
 
     /**
-     * /**
      * @return array
      */
     public function responseArray()
     {
-        $data = parent::responseArray();
+        $data                 = parent::responseArray();
         $data['failed_rules'] = $this->getFailedRules();
-        $data['errors'] = $this->getErrorMessages();
+        $data['errors']       = $this->getErrorMessages();
 
         return $data;
     }

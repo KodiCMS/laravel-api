@@ -3,7 +3,6 @@
 namespace KodiCMS\API\Exceptions;
 
 use KodiCMS\API\Http\Response;
-use Illuminate\Validation\Validator;
 
 class MissingParameterException extends Exception
 {
@@ -15,16 +14,18 @@ class MissingParameterException extends Exception
     /**
      * @var array
      */
-    protected $rules = [];
+    protected $parameters = [];
 
     /**
-     * @param Validator $validator
+     * MissingParameterException constructor.
+     *
+     * @param array $parameters
      */
-    public function __construct(Validator $validator)
+    public function __construct(array $parameters)
     {
-        $this->rules = $validator->errors()->getMessages();
-        $this->message = trans('api.messages.missing_params', [
-            'field' => implode(', ', array_keys($validator->failed())),
+        $this->parameters = $parameters;
+        $this->message = trans('api::core.messages.missing_params', [
+            'field' => implode(', ', array_keys($parameters)),
         ]);
     }
 
@@ -33,7 +34,7 @@ class MissingParameterException extends Exception
      */
     public function getFailedRules()
     {
-        return $this->rules;
+        return $this->parameters;
     }
 
     /**

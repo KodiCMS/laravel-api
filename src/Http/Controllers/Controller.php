@@ -10,7 +10,6 @@ use KodiCMS\API\Http\Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Foundation\Bus\DispatchesJobs;
-use KodiCMS\API\Exceptions\ValidationException;
 use Illuminate\Routing\Controller as BaseController;
 use KodiCMS\API\Exceptions\MissingParameterException;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -41,7 +40,7 @@ abstract class Controller extends BaseController
      * @param mixed             $default    Значение по умолчанию, если параметр отсутсвует
      * @param bool|string|array $isRequired Параметр обязателен для передачи
      *
-     * @throws MissingApiParameterException
+     * @throws MissingParameterException
      *
      * @return string
      */
@@ -58,7 +57,7 @@ abstract class Controller extends BaseController
      * @param string            $key
      * @param bool|string|array $rules
      *
-     * @throws MissingApiParameterException
+     * @throws MissingParameterException
      *
      * @return string
      */
@@ -98,8 +97,6 @@ abstract class Controller extends BaseController
     /**
      * @param array $parameters
      *
-     * @throws MissingApiParameterException
-     *
      * @return bool
      */
     final public function validateParameters(array $parameters)
@@ -116,7 +113,9 @@ abstract class Controller extends BaseController
         $validator = Validator::make(Request::all(), $parameters);
 
         if ($validator->fails()) {
-            throw new MissingParameterException($validator);
+            throw new MissingParameterException(
+                $validator->errors()->getMessages()
+            );
         }
 
         return true;
@@ -225,38 +224,5 @@ abstract class Controller extends BaseController
     public function __unset($key)
     {
         unset($this->responseArray[$key]);
-    }
-
-    /**
-     * Throw the failed validation exception.
-     *
-     * @param \Illuminate\Http\Request                   $request
-     * @param \Illuminate\Contracts\Validation\Validator $validator
-     *
-     * @return void
-     */
-    protected function throwValidationException(Request $request, $validator)
-    {
-        $exception = new ValidationException();
-        $exception->setValidator($validator);
-
-        throw $exception;
-    }
-
-    /**
-     * Create the response for when a request fails validation.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param array                    $errors
-     *
-     * @return \Illuminate\Http\Response
-     */
-    protected function buildFailedValidationResponse(Request $request, array $errors)
-    {
-        if ($request->ajax()) {
-            return (new Response(config('app.debug')))->createResponse($errors, 422);
-        }
-
-        return redirect()->to($this->getRedirectUrl())->withInput($request->input())->withErrors($errors, $this->errorBag());
     }
 }
