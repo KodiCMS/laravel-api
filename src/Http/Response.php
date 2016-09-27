@@ -81,7 +81,11 @@ class Response
      */
     public function createResponse(array $responseData, $code = 200)
     {
-        $responseType = Request::route()->parameter('type', '.json');
+        $responseType = '.json';
+        
+        $route = Request::route();
+        
+        $responseType = $route ? $route->parameter('type', $responseType) : $responseType;
 
         switch ($responseType) {
             case '.yaml':
