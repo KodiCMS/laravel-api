@@ -27,7 +27,7 @@ class Response
     const TYPE_CONTENT  = 'content';
     const TYPE_REDIRECT = 'redirect';
 
-    private $debug;
+    protected $debug;
 
     /**
      * @param bool $debug
